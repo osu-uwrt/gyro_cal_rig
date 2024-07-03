@@ -35,7 +35,7 @@ size_t inBufCursor = 0;
 const char sync = ';';
 
 bool enabled;
-uint16_t speed;
+int32_t speed;
 bool heat;
 long lastSendTime = 0;
 
@@ -86,26 +86,45 @@ void setStepperEnabled(bool enabled)
 }
 
 
+char *memchr(const char *m, char c, size_t l)
+{
+    for(size_t i = 0; i < l; i++)
+    {
+        if(m[i] == c)
+        {
+            return &m[i];
+        }
+    }
+
+    return nullptr;
+}
+
+
 void receiveSerial()
 {
     if(Serial.available())
     {
         inBufCursor += Serial.readBytes(&inBuf[inBufCursor], sizeof(inBuf) - inBufCursor);
+        if(inBufCursor >= sizeof(inBuf))
+        {
+            memset(inBuf, 0, sizeof(inBuf));
+            inBufCursor = 0;
+        }
     }
 
-    char *sync1 = strchr(inBuf, sync);
+    char *sync1 = memchr(inBuf, sync, sizeof(inBuf));
     if(!sync1)
     {
         return;
     }
 
-    char *sync2 = strchr(sync1 + 1, sync);
+    char *sync2 = memchr(sync1 + 1, sync, sizeof(inBuf));
     if(!sync2)
     {
         return;
     }
 
-    if(sync2 - sync1 == 6)
+    if(sync2 - sync1 == 5)
     {
         //get enabled
         enabled = sync1[1] & B00000001;
@@ -115,16 +134,28 @@ void receiveSerial()
 
         //get speed
         speed = sync1[2];
+        // Serial.println("char 1 " + String(sync1[2]));
+        // Serial.println("speed " + String(speed));
         speed = speed << 8;
         speed |= sync1[3] & 0xFF;
+        // Serial.println("char 2 " + String(sync1[3]));
+        // Serial.println("speed " + String(speed));
         speed = speed << 8;
         speed |= sync1[4] & 0xFF;
+        // Serial.println("char 3 " + String(sync1[4]));
+        // Serial.println("speed " + String(speed));
         speed = speed << 8;
         speed |= sync1[5] & 0xFF;
+        // Serial.println("char 4 " + String(sync1[5]));
 
         //clear buffer (could handle better but dont really need to)
         memset(inBuf, 0, sizeof(inBuf));
         inBufCursor = 0;
+
+        if(speed == 1000)
+        {
+            digitalWrite(LED_BUILTIN, LOW);
+        }
     }
 }
 

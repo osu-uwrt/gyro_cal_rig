@@ -1,0 +1,11 @@
+#request
+float32[] rates
+int16[] temps
+string log_file
+---
+#result
+string result
+---
+#feedback
+int16 current_rate_idx
+int16 current_temp_idx

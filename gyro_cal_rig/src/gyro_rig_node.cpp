@@ -8,9 +8,9 @@ using namespace std::placeholders;
 //rigid settings
 #define RIG_BAUD 9600
 
-#define STEPPER_ENABLED 0b00000001
+#define STEPPER_ENABLED 0x01
 #define RIG_HEATING 0b00000010
-#define STEPPER_STALLED 0b00000100
+#define STEPPER_STALLED 0x02
 
 enum GyroRigField
 {
@@ -29,25 +29,25 @@ enum GyroRigFrame
 const SerialFramesMap RIG_STATUS_FRAMES = {
     {
         RIG_DESIRED_FRAME,
-        SerialFrame {
+        SerialFrame ({
             FIELD_SYNC,
             RIG_DESIRED_STATUS,
             RIG_DESIRED_RATE,
             RIG_DESIRED_RATE,
             RIG_DESIRED_RATE,
             RIG_DESIRED_RATE
-        }
+        })
     },
     {
         RIG_ACTUAL_FRAME,
-        SerialFrame {
+        SerialFrame ({
             FIELD_SYNC,
             RIG_ACTUAL_STATUS,
             RIG_ACTUAL_RATE,
             RIG_ACTUAL_RATE,
             RIG_ACTUAL_RATE,
             RIG_ACTUAL_RATE
-        }
+        })
     }
 };
 
@@ -120,14 +120,15 @@ class GyroRigDriver : public rclcpp::Node
         rclcpp::Time now = get_clock()->now();
 
         SerialData status;
+        status.data[0] = 0;
         status.data[0] |= (msg->enabled ? STEPPER_ENABLED : 0);
-        status.data[0] |= (msg->heat ? STEPPER_ENABLED : 0);
+        status.data[0] |= (msg->heat ? RIG_HEATING : 0);
         status.numData = 1;
         processor->setField(GyroRigField::RIG_DESIRED_STATUS, status, now);
 
         SerialData rate;
-        uwrt_gyro::convertToCString<int32_t>(msg->rate, rate.data, sizeof(int32_t));
-        rate.numData = sizeof(int32_t);
+        size_t sz = uwrt_gyro::convertToCString<int32_t>(msg->rate, rate.data, sizeof(int32_t));
+        rate.numData = sz;
         processor->setField(GyroRigField::RIG_DESIRED_RATE, rate, now);
     }
 
