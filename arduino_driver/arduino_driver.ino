@@ -35,12 +35,12 @@ size_t inBufCursor = 0;
 const char sync = ';';
 
 bool enabled;
-int32_t speed;
+int32_t speed = 0;
 bool heat;
 long lastSendTime = 0;
 
 void setStepperEnabled(bool enabled);
-void receiveSerial();
+bool receiveSerial();
 void sendSerial();
 
 void setup() {
@@ -70,12 +70,18 @@ void setup() {
 
 void loop() {
     long currentTime = millis();
-    receiveSerial();
+    bool msgReceived = receiveSerial();
 
     if(currentTime - lastSendTime > SEND_INTERVAL)
     {
         sendSerial();
         lastSendTime = currentTime;
+    }
+
+    if(msgReceived)
+    {
+        setStepperEnabled(enabled);
+        stepper.moveAtVelocity(speed);
     }
 }
 
@@ -83,6 +89,14 @@ void loop() {
 void setStepperEnabled(bool enabled)
 {
     digitalWrite(ENABLE_PIN, (enabled ? LOW : HIGH));
+    
+    if(enabled)
+    {
+        stepper.enable();
+    } else
+    {
+        stepper.disable();
+    }
 }
 
 
@@ -100,7 +114,7 @@ char *memchr(const char *m, char c, size_t l)
 }
 
 
-void receiveSerial()
+bool receiveSerial()
 {
     if(Serial.available())
     {
@@ -115,16 +129,16 @@ void receiveSerial()
     char *sync1 = memchr(inBuf, sync, sizeof(inBuf));
     if(!sync1)
     {
-        return;
+        return false;
     }
 
     char *sync2 = memchr(sync1 + 1, sync, sizeof(inBuf));
     if(!sync2)
     {
-        return;
+        return false;
     }
 
-    if(sync2 - sync1 == 5)
+    if(sync2 - sync1 == 6)
     {
         //get enabled
         enabled = sync1[1] & B00000001;
@@ -134,29 +148,21 @@ void receiveSerial()
 
         //get speed
         speed = sync1[2];
-        // Serial.println("char 1 " + String(sync1[2]));
-        // Serial.println("speed " + String(speed));
         speed = speed << 8;
         speed |= sync1[3] & 0xFF;
-        // Serial.println("char 2 " + String(sync1[3]));
-        // Serial.println("speed " + String(speed));
         speed = speed << 8;
         speed |= sync1[4] & 0xFF;
-        // Serial.println("char 3 " + String(sync1[4]));
-        // Serial.println("speed " + String(speed));
         speed = speed << 8;
         speed |= sync1[5] & 0xFF;
-        // Serial.println("char 4 " + String(sync1[5]));
 
         //clear buffer (could handle better but dont really need to)
         memset(inBuf, 0, sizeof(inBuf));
         inBufCursor = 0;
 
-        if(speed == 1000)
-        {
-            digitalWrite(LED_BUILTIN, LOW);
-        }
+        return true;
     }
+
+    return false;
 }
 
 
