@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>gyro_cal_rig</name>
+  <name>gyro_cal_gui</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
   <maintainer email="brach2003@gmail.com">brach</maintainer>
@@ -13,8 +13,9 @@
   <test_depend>ament_lint_common</test_depend>
 
   <depend>rclcpp</depend>
-  <depend>riptide_gyro</depend>
+  <depend>rclcpp_action</depend>
   <depend>std_msgs</depend>
+  <depend>riptide_msgs2</depend>
   <depend>gyro_cal_rig_msgs</depend>
 
   <export>

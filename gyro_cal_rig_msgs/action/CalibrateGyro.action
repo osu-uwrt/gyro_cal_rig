@@ -1,7 +1,8 @@
 #request
 float32[] rates
 int16[] temps
-string log_file
+float32 seconds_per_rate
+string log_directory
 ---
 #result
 string result

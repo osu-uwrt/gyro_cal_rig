@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.8)
-project(gyro_cal_rig)
+project(gyro_cal_gui LANGUAGES CXX)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -7,35 +16,35 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
-
 find_package(rclcpp REQUIRED)
-find_package(riptide_gyro REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(riptide_msgs2 REQUIRED)
 find_package(gyro_cal_rig_msgs REQUIRED)
+
+# Qt dependencies
+find_package(QT NAMES Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
 
 set(deps
   rclcpp
-  riptide_gyro
+  rclcpp_action
+  std_msgs
+  riptide_msgs2
   gyro_cal_rig_msgs)
 
-add_executable(gyro_rig_node src/gyro_rig_node.cpp)
+add_executable(GyroCalGui
+  src/main.cpp
+  src/rig_gui.ui
+)
 
-ament_target_dependencies(gyro_rig_node ${deps})
+ament_target_dependencies(GyroCalGui
+  ${deps})
 
-install(TARGETS gyro_rig_node
+target_link_libraries(GyroCalGui Qt${QT_VERSION_MAJOR}::Widgets)
+
+install(TARGETS GyroCalGui
   DESTINATION lib/${PROJECT_NAME})
-
-install(PROGRAMS src/gyro_calibration_node.py
-  DESTINATION lib/${PROJECT_NAME})
-
-install(DIRECTORY config
-  DESTINATION share/${PROJECT_NAME})
-
-install(DIRECTORY launch
-  DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
