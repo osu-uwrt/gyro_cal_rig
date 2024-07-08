@@ -16,6 +16,7 @@
 #define GYRO_STALE_TIME 200ms
 #define RIG_STALE_TIME 1s
 #define GYRO_CAL_ACTION "cal_rig/calibrate"
+#define CALIBRATING_TOPIC "status/cal_rig/calibrating"
 #define GYRO_RAW_TOPIC "gyro/raw"
 #define GYRO_STATUS_TOPIC "gyro/status"
 #define RIG_STATUS_TOPIC "status/cal_rig"
@@ -54,6 +55,12 @@ class GyroCalGuiNode : public rclcpp::Node
         );
 
         //subscriptions
+        calibratingSub = create_subscription<std_msgs::msg::Bool>(
+            CALIBRATING_TOPIC,
+            10,
+            std::bind(&GyroCalGuiNode::calibratingCb, this, _1)
+        );
+
         gyroRawSub = create_subscription<riptide_msgs2::msg::Int32Stamped>(
             GYRO_RAW_TOPIC,
             rclcpp::SensorDataQoS(),
@@ -118,20 +125,6 @@ class GyroCalGuiNode : public rclcpp::Node
         
         //add rates
         int numRateSteps = (maxRate - minRate) / rateStep;
-        // for(reverse = false; !reverse; reverse = !reverse)
-        // {
-        //     for(i = 0; i < numRateSteps; i++)
-        //     {
-        //         double rpsRate = i * rateStep + minRate; //rotations per second rate
-        //         goal.rates.push_back(rpsRate * (reverse ? -1 : 1));
-        //     }
-
-        //     //break early if no negative directions needed, otherwise will continue and loop will naturally break
-        //     if(!useBothDirections)
-        //     {
-        //         break;
-        //     }
-        // }
         
         do
         {
@@ -261,11 +254,11 @@ class GyroCalGuiNode : public rclcpp::Node
         //compute progress
         int
             possibleCombinations = requestedRates.size() * requestedTemps.size(),
-            triedCombinations = requestedRates.size() * (feedback->current_temp_idx - 1) + feedback->current_rate_idx,
+            triedCombinations = requestedRates.size() * (feedback->current_temp_idx) + feedback->current_rate_idx,
             combinationsToGo = possibleCombinations - triedCombinations;
         
         double progressPercent = triedCombinations / (double) possibleCombinations;
-        ui->uiCalProgress->setValue((int) progressPercent * 100);
+        ui->uiCalProgress->setValue((int) (progressPercent * 100));
 
         std::string statusString = "Calibration in progress (" + std::to_string(combinationsToGo) + " combinations to go)";
         setStatus(statusString, false);
@@ -287,6 +280,7 @@ class GyroCalGuiNode : public rclcpp::Node
                 return;
         }
         
+        ui->uiCalProgress->setValue(100);
         setStatus("Calibration succeeded!", false);
     }
 
