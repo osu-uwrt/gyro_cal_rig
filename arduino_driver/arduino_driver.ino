@@ -23,6 +23,7 @@
 #include <TMC2209.h>
 
 #define ENABLE_PIN 2
+#define HEAT_PIN A0
 #define SEND_INTERVAL 100
 
 SoftwareSerial stepperSerial(10, 11);
@@ -48,6 +49,7 @@ void setup() {
     stepper.setup(stepperSerial);
     stepper.enableAutomaticCurrentScaling();
     pinMode(ENABLE_PIN, OUTPUT);
+    pinMode(HEAT_PIN, OUTPUT);
     setStepperEnabled(false);
 
     //initialize serial
@@ -97,6 +99,8 @@ void setStepperEnabled(bool enabled)
     {
         stepper.disable();
     }
+
+    digitalWrite(HEAT_PIN, heat);
 }
 
 
