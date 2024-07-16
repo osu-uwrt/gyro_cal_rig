@@ -2,57 +2,106 @@
 % Gyro calibration data analysis function
 %
 
-function calPoints = analyzeCalibration(logDir)
-    format compact
+STEPS_PER_ROTATION = 7.557241247324732e+05;
+RADS_PER_STEP = (1 / STEPS_PER_ROTATION) * 2 * pi;
 
-    STEPPER_COUNTS_PER_REV = 240 * 256 * 10.8;
+fprintf("Please select input data\n");
+[files, bases] = uigetfile("*.csv", "Select data files", "MultiSelect", "on");
+fullfiles = fullfile(bases, files);
 
-    gyroRawFile = fullfile(logDir, "gyro_raw.csv");
-    gyroStatusFile = fullfile(logDir, "gyro_status.csv");
-    rigStatusFile = fullfile(logDir, "rig.csv");
-    
-    gyroRawTable = readtable(gyroRawFile, "NumHeaderLines", 1);
-    gyroStatusTable = readtable(gyroStatusFile, "NumHeaderLines", 1);
-    rigStatusTable = readtable(rigStatusFile, "NumHeaderLines", 1);
-    
-    numPoints = height(gyroRawTable);
-    calPoints = zeros(numPoints, 4);
-    for readingIdx = 1 : numPoints
-        gyroReading = gyroRawTable{readingIdx, :};
-        sec = gyroReading(1);
-        nanosec = gyroReading(2);
-        gyroStatus = gyroStatusTable{findPointClosestToTime(gyroStatusTable, sec, nanosec), :};
-        rigStatus = rigStatusTable{findPointClosestToTime(rigStatusTable, sec, nanosec), :};
-        
-        time = sec + nanosec/ 1e9;
-        raw = gyroReading(3);
-        rate = rigStatus(3) / STEPPER_COUNTS_PER_REV * 2 * pi;
-        temp = gyroStatus(3);
-        calPoints(readingIdx, :) = [time, rate, temp, raw];
+fprintf("Populating arrays\n");
 
-        if mod(readingIdx, 1000) == 0
-            fprintf("Processed %d / %d points (%f%%)\n", readingIdx, numPoints, readingIdx / numPoints * 100);
-        end
-    end
-    
-    figure;
-    plot(calPoints(:, 1), calPoints(:, 4));
-    title("Raw vs Time");
-    xlabel("ROS Time (s)");
-    ylabel("Gyro reading (ADC counts)");
+caltimes = [];
+calgyrorates = [];
+calrigrates = [];
+caltemps = [];
 
-    figure
-    plot(calPoints(:, 4), calPoints(:, 2), ".");
-    title("Reading vs Rate");
-    xlabel("Rate (rads/sec)");
-    ylabel("Gyro reading (ADC counts)");
+for i = 1 : length(fullfiles)
+    filename = fullfiles{i};
+    fprintf("Loading table %d/%d (%s)\n", i, length(fullfiles), filename);
+    table = readtable(filename, "NumHeaderLines", 1);
+
+    %header: sec,nanosec,gyro_raw,gyro_temp,rig_rate,rig_heating,rig_enabled,rig_stalled
+
+    tabletimes = table{:, 1} + (table{:, 2} / 1000000000) - table{1, 1};
+    tablegyrorates = table{:, 3};
+    tabletemps = table{:, 4};
+    tablerigrates = table{:, 5} * RADS_PER_STEP;
+
+    caltimes = [caltimes; tabletimes];
+    calgyrorates = [calgyrorates; tablegyrorates];
+    calrigrates = [calrigrates; tablerigrates];
+    caltemps = [caltemps; tabletemps];
 end
 
-
-function idx = findPointClosestToTime(table, sec, nanosec)
-    desiredTime = sec + nanosec / 1e9;
-    tableTimes = table{:, 1} + table{:, 2} / 1e9;
-
-    absTimeDiffs = abs(tableTimes - desiredTime);
-    [~, idx] = min(absTimeDiffs);
+fprintf("Processing data\n");
+rawcaldata = [caltimes, calgyrorates, calrigrates, caltemps];
+filteredcaldata = [];
+uniquerigates = unique(calrigrates);
+numuniquerates = size(uniquerigates);
+for i = 1 : numuniquerates
+    rigrate = uniquerigates(i);
+    fprintf("Processing rate %d / %d\n", i, numuniquerates);
+    
+    ratelocs = calrigrates == rigrate;
+    dataatrate = rawcaldata(ratelocs, :);
+    gyrorates = dataatrate(:, 2);
+    
+    %remove outliers
+    ratemean = mean(gyrorates);
+    ratestdev = std(gyrorates);
+    ratestokeep = abs(gyrorates - ratemean) < 3 * ratestdev;
+    filteredcaldata = [filteredcaldata; dataatrate(ratestokeep, :)];
 end
+
+filteredtimes = filteredcaldata(:, 1);
+filteredgyrorates = filteredcaldata(:, 2);
+filteredrigrates = filteredcaldata(:, 3);
+filteredtemps = filteredcaldata(:, 4);
+
+fprintf("Creating plots\n");
+
+figure;
+tiledlayout(3, 2);
+nexttile;
+plot(caltimes);
+title("Time");
+ylabel("Time (s)");
+
+nexttile;
+plot(caltimes, calgyrorates);
+title("Raw counts vs Time");
+xlabel("Time (s)")
+ylabel("Gyro rate (counts)");
+
+nexttile;
+plot(caltimes, caltemps, ".");
+title("Gyro temperature vs time");
+xlabel("Time (s)");
+ylabel("Gyro temperature (counts)");
+
+nexttile;
+plot(caltimes, calrigrates, ".");
+title("Rig rate vs time");
+xlabel("Time (s)");
+ylabel("Rig rate (rads / sec)");
+
+nexttile;
+plot(filteredrigrates, filteredgyrorates, ".");
+title("Gyro rate vs rig rate");
+xlabel("Rig rate (rads / sec)");
+ylabel("Gyro rate (counts)");
+
+nexttile
+plot3(filteredgyrorates, filteredtemps, filteredrigrates, ".");
+title("Raw calibration surface");
+xlabel("Gyro rate (counts)");
+ylabel("Gyro temperature (counts)");
+zlabel("Actual rate (rads / sec)");
+
+fprintf("Creating fit\n");
+[fitresult, gof] = fitcalibrationdata(filteredgyrorates, filteredtemps, filteredrigrates);
+
+%display fit as final act
+fprintf("Final result: \n");
+fitresult
