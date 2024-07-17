@@ -16,17 +16,18 @@ function [fitresult, gof] = fitcalibrationdata(filteredgyrorates, filteredtemps,
 
 
 %% Fit: 'untitled fit 1'.
-[xData, yData, zData] = prepareSurfaceData( filteredgyrorates, filteredtemps, filteredrigrates );
+% [xData, yData, zData] = prepareSurfaceData( filteredgyrorates, filteredtemps, filteredrigrates );
+[filteredgyrorates, filteredtemps, filteredrigrates] = prepareSurfaceData( filteredgyrorates, filteredtemps, filteredrigrates );
 
 % Set up fittype and options.
 ft = fittype( 'poly21' );
 
 % Fit model to data.
-[fitresult, gof] = fit( [xData, yData], zData, ft, 'Normalize', 'on' );
+[fitresult, gof] = fit( [filteredgyrorates, filteredtemps], filteredrigrates, ft, 'Normalize', 'on' );
 
 % Plot fit with data.
 figure( 'Name', 'Gyro calibration surface' );
-h = plot( fitresult, [xData, yData], zData );
+h = plot( fitresult, [filteredgyrorates, filteredtemps], filteredrigrates );
 legend( h, 'Gyro calibration surface', 'filteredrigrates vs. filteredgyrorates, filteredtemps', 'Location', 'NorthEast', 'Interpreter', 'none' );
 % Label axes
 xlabel( 'filteredgyrorates', 'Interpreter', 'none' );
