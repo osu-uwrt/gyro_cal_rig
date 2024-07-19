@@ -57,7 +57,17 @@
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QDoubleSpinBox" name="uiRigManualRate"/>
+     <widget class="QDoubleSpinBox" name="uiRigManualRate">
+      <property name="decimals">
+       <number>3</number>
+      </property>
+      <property name="minimum">
+       <double>-1.000000000000000</double>
+      </property>
+      <property name="maximum">
+       <double>1.000000000000000</double>
+      </property>
+     </widget>
     </item>
     <item row="11" column="2" colspan="2">
      <widget class="QPushButton" name="uiRigStartCal">
@@ -84,6 +94,9 @@
      <widget class="QDoubleSpinBox" name="uiRigMinRate">
       <property name="decimals">
        <number>4</number>
+      </property>
+      <property name="minimum">
+       <double>-1.000000000000000</double>
       </property>
       <property name="maximum">
        <double>1.000000000000000</double>
@@ -139,7 +152,11 @@
      </widget>
     </item>
     <item row="4" column="3">
-     <widget class="QDoubleSpinBox" name="uiRigTimePerRate"/>
+     <widget class="QDoubleSpinBox" name="uiRigTimePerRate">
+      <property name="maximum">
+       <double>500.000000000000000</double>
+      </property>
+     </widget>
     </item>
     <item row="15" column="0">
      <widget class="QLabel" name="label_18">
@@ -161,13 +178,13 @@
       </property>
      </widget>
     </item>
-    <item row="8" column="3">
-     <widget class="QDoubleSpinBox" name="uiRigTempStep"/>
-    </item>
     <item row="2" column="3">
      <widget class="QDoubleSpinBox" name="uiRigMaxRate">
       <property name="decimals">
        <number>4</number>
+      </property>
+      <property name="minimum">
+       <double>-1.000000000000000</double>
       </property>
       <property name="maximum">
        <double>1.000000000000000</double>
@@ -278,9 +295,6 @@
       </property>
      </widget>
     </item>
-    <item row="6" column="3">
-     <widget class="QDoubleSpinBox" name="uiRigMinTemp"/>
-    </item>
     <item row="5" column="3">
      <widget class="QCheckBox" name="uiRigUseBothDirs">
       <property name="text">
@@ -352,9 +366,6 @@
        <string>ROS time:</string>
       </property>
      </widget>
-    </item>
-    <item row="7" column="3">
-     <widget class="QDoubleSpinBox" name="uiRigMaxTemp"/>
     </item>
     <item row="9" column="2">
      <widget class="QLabel" name="label_28">
@@ -469,6 +480,27 @@
         </widget>
        </item>
       </layout>
+     </widget>
+    </item>
+    <item row="6" column="3">
+     <widget class="QSpinBox" name="uiRigMinTemp">
+      <property name="maximum">
+       <number>20000</number>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="3">
+     <widget class="QSpinBox" name="uiRigMaxTemp">
+      <property name="maximum">
+       <number>20000</number>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="3">
+     <widget class="QSpinBox" name="uiRigTempStep">
+      <property name="maximum">
+       <number>20000</number>
+      </property>
      </widget>
     </item>
    </layout>
