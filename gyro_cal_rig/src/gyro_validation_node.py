@@ -130,7 +130,6 @@ class GyroValidationNode(GyroProcedureNode):
             direction = 1 if rate - self._rigStatus.rate > 0 else -1
             newRate = self._rigStatus.rate + direction * RATE_STEP_SIZE
             self.sendRigCommand(newRate, heat)
-            time.sleep(0.1)
         
         self.sendRigCommand(rate, heat)
     

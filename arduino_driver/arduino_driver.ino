@@ -136,37 +136,37 @@ bool receiveSerial()
         return false;
     }
 
-    char *sync2 = memchr(sync1 + 1, sync, sizeof(inBuf));
+    char *sync2 = sync1;
+    while(sync2 && sync2 - sync1 != 6)
+    {
+        sync2 = memchr(sync2 + 1, sync, sizeof(inBuf));
+    }
+
     if(!sync2)
     {
         return false;
     }
 
-    if(sync2 - sync1 == 6)
-    {
-        //get enabled
-        enabled = sync1[1] & B00000001;
+    //get enabled
+    enabled = sync1[1] & B00000001;
 
-        //get temperature
-        heat = sync1[1] & B00000010;
+    //get temperature
+    heat = sync1[1] & B00000010;
 
-        //get speed
-        speed = sync1[2];
-        speed = speed << 8;
-        speed |= sync1[3] & 0xFF;
-        speed = speed << 8;
-        speed |= sync1[4] & 0xFF;
-        speed = speed << 8;
-        speed |= sync1[5] & 0xFF;
+    //get speed
+    speed = sync1[2];
+    speed = speed << 8;
+    speed |= sync1[3] & 0xFF;
+    speed = speed << 8;
+    speed |= sync1[4] & 0xFF;
+    speed = speed << 8;
+    speed |= sync1[5] & 0xFF;
 
-        //clear buffer (could handle better but dont really need to)
-        memset(inBuf, 0, sizeof(inBuf));
-        inBufCursor = 0;
+    //clear buffer (could handle better but dont really need to)
+    memset(inBuf, 0, sizeof(inBuf));
+    inBufCursor = 0;
 
-        return true;
-    }
-
-    return false;
+    return true;
 }
 
 
