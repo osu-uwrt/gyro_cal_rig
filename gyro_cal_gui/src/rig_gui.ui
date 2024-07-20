@@ -507,6 +507,36 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <tabstops>
+  <tabstop>uiRigManualEnabled</tabstop>
+  <tabstop>uiRigManualRate</tabstop>
+  <tabstop>uiRigManualHeat</tabstop>
+  <tabstop>uiRigCommand</tabstop>
+  <tabstop>uiRigMinRate</tabstop>
+  <tabstop>uiRigMaxRate</tabstop>
+  <tabstop>uiRigRateStep</tabstop>
+  <tabstop>uiRigTimePerRate</tabstop>
+  <tabstop>uiRigUseBothDirs</tabstop>
+  <tabstop>uiRigMinTemp</tabstop>
+  <tabstop>uiRigMaxTemp</tabstop>
+  <tabstop>uiRigTempStep</tabstop>
+  <tabstop>uiBrowseLogDir</tabstop>
+  <tabstop>uiLogDir</tabstop>
+  <tabstop>uiRigStartCal</tabstop>
+  <tabstop>uiCurrentRate</tabstop>
+  <tabstop>uiCurrentTemp</tabstop>
+  <tabstop>uiCalStatus</tabstop>
+  <tabstop>uiRigRosTime</tabstop>
+  <tabstop>uiRigCalibrating</tabstop>
+  <tabstop>uiGyroOnline</tabstop>
+  <tabstop>uiGyroRate</tabstop>
+  <tabstop>uiGyroTemp</tabstop>
+  <tabstop>uiRigOnline</tabstop>
+  <tabstop>uiRigEnabled</tabstop>
+  <tabstop>uiRigMotorRate</tabstop>
+  <tabstop>uiRigMotorStalled</tabstop>
+  <tabstop>uiRigHeating</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
