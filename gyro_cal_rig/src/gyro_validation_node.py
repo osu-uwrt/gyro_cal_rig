@@ -34,6 +34,8 @@ class GyroValidationNode(GyroProcedureNode):
         self._odom = Odometry()
         self._expectedYaw = 0
         
+        self.get_logger().info("Gyro validation node ready")
+        
 
     def validateCb(self, handle):
         result = CalibrateGyro.Result()
@@ -172,7 +174,6 @@ class GyroValidationNode(GyroProcedureNode):
         timeSinceLast = self.secondsFromTimeMsg(msg.header.stamp) - self.secondsFromTimeMsg(self._rigStatus.header.stamp) #returns seconds
         radiansTravelled = timeSinceLast * msg.rate / self._stepsPerRev
         self._expectedYaw += radiansTravelled * 2 * pi
-        self.get_logger().info(str(self._expectedYaw))
         self._rigStatus = msg
         self.updateLog()
         

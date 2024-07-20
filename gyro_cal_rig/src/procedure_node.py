@@ -20,7 +20,7 @@ GYRO_STATUS_TOPIC = "gyro/status"
 class GyroProcedureNode(Node):
     def __init__(self, nodeName, calFunc):
         super().__init__(nodeName)
-        self.get_logger().info("Gyro calibrator starting")
+        self.get_logger().info("Gyro procedure node starting")
         
         #action server
         self._action_server = ActionServer(
@@ -58,8 +58,6 @@ class GyroProcedureNode(Node):
         self.declare_parameter("rig_ack_timeout", 3.0)
         self.add_on_set_parameters_callback(self.readParameters)
         self.readParameters()
-
-        self.get_logger().info("Gyro calibration action ready")
     
     def timeAsStr(self):
         return datetime.datetime.now().strftime("%m-%d-%Y_%H-%M-%S")

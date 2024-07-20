@@ -25,6 +25,8 @@ class GyroCalibrationNode(GyroProcedureNode):
         self._rigStatusSub = self.create_subscription(GyroRigStatus, RIG_STATUS_TOPIC, self.rigStatusCb, 10)
         self._gyroRawSub = self.create_subscription(Int32Stamped, GYRO_RAW_TOPIC, self.gyroRawCb, qos_profile=qos_profile_sensor_data)
         self._gyroStatusSub = self.create_subscription(GyroStatus, GYRO_STATUS_TOPIC, self.gyroStatusCb, 10)
+        
+        self.get_logger().info("Gyro calibration node ready")
     
     
     def doCalibration(self, goal_handle):

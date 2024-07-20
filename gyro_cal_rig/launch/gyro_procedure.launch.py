@@ -21,11 +21,12 @@ def launch_gyro_driver(context, **kwargs):
             os.path.join(
                 get_package_share_directory("riptide_gyro"),
                 "launch",
-                "gyro.launch.py"
+                "gyro_bench.launch.py"
             )
         ),
         launch_arguments=[
-            ("port", LC("gyro_port"))
+            ("robot", LC("robot")),
+            ("gyro_port", LC("gyro_port")),
         ]
     )
     
@@ -75,17 +76,18 @@ def launch_procedure_node(context, **kwargs):
 
 def generate_launch_description():
     return LaunchDescription([
+        DeclareLaunchArgument("robot", default_value="tempest", description="name of the robot. needed for nav"),
         DeclareLaunchArgument("gyro_procedure_node", default_value="gyro_calibration_node", description="Name of the calibrator/validator program to run."),
         DeclareLaunchArgument("gyro_port", default_value="/dev/ttyUSB0", description="Port connected to gyro"),
         DeclareLaunchArgument("rig_port", default_value="/dev/ttyUSB1", description="Port connected to rig"),
         DeclareLaunchArgument("gyro_driver_disabled", default_value="False", description="Disable gyro driver"),
         DeclareLaunchArgument("cal_gui_disabled", default_value="False", description="Disable calibration rig GUI"),
         
+        #gyro driver
+        OpaqueFunction(function=launch_gyro_driver),
+        
         GroupAction([
-            PushRosNamespace("cal_rig"),
-            
-            #gyro driver
-            OpaqueFunction(function=launch_gyro_driver),
+            PushRosNamespace(LC("robot")),
             
             #rig gui
             OpaqueFunction(function=launch_gyro_rig_gui),
