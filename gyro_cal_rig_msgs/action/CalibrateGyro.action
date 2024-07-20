@@ -1,5 +1,5 @@
 #request
-float32[] rates
+int32[] rates
 int16[] temps
 float32 seconds_per_rate
 string log_directory

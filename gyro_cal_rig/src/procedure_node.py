@@ -1,5 +1,6 @@
 import datetime
 import rclpy
+import time
 from threading import Lock
 from rclpy.node import Node
 from rclpy.action import ActionServer
@@ -15,15 +16,13 @@ RIG_CALIBRATING_TOPIC = "status/cal_rig/calibrating"
 GYRO_RAW_TOPIC = "gyro/raw"
 GYRO_STATUS_TOPIC = "gyro/status"
 
-def timeAsStr():
-    return datetime.datetime.now().strftime("%m-%d-%y_%h-%m-%s")
-
 
 class GyroProcedureNode(Node):
     def __init__(self, nodeName, calFunc):
         super().__init__(nodeName)
         self.get_logger().info("Gyro calibrator starting")
         
+        #action server
         self._action_server = ActionServer(
             self,
             CalibrateGyro,
@@ -31,6 +30,12 @@ class GyroProcedureNode(Node):
             goal_callback=self.calGoalCb,
             cancel_callback=self.calCancelCb,
             execute_callback=calFunc)
+        
+        #parameters
+        self.declare_parameter("steps_per_revolution", 0.0)
+        self._stepsPerRev = self.get_parameter("steps_per_revolution").value
+        if self._stepsPerRev == 0:
+            self.get_logger().error("Potential error loading parameters, steps per rev is 0!")
 
         #publishers
         self._rigCommandPub = self.create_publisher(GyroRigStatus, RIG_COMMAND_TOPIC, 10)
@@ -56,7 +61,9 @@ class GyroProcedureNode(Node):
 
         self.get_logger().info("Gyro calibration action ready")
     
-    
+    def timeAsStr(self):
+        return datetime.datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
+
     def publishCalibrating(self):
         msg = Bool()
         msg.data = self._calInProgress
@@ -104,6 +111,8 @@ class GyroProcedureNode(Node):
         #wait for rig to acknowledge
         ackStartTime = self.get_clock().now()
         while self.get_clock().now().seconds_nanoseconds()[0] - ackStartTime.seconds_nanoseconds()[0] < self._ackTimeout:
+            self._rigCommandPub.publish(desiredStatus)
+            time.sleep(0.1)
             if self._rigStatus.rate == desiredStatus.rate \
             and self._rigStatus.heat == desiredStatus.heat \
             and self._rigStatus.enabled == desiredStatus.enabled:

@@ -15,10 +15,6 @@ from procedure_node import GyroProcedureNode, RIG_STATUS_TOPIC, GYRO_RAW_TOPIC, 
 
 CAL_LOG_COLUMNS = ["sec", "nanosec", "gyro_raw", "gyro_temp", "rig_rate", "rig_heating", "rig_enabled", "rig_stalled"]
 
-def timeAsStr():
-    return datetime.datetime.now().strftime("%m-%d-%Y_%H-%M-%S")
-
-
 class GyroCalibrationNode(GyroProcedureNode):
     def __init__(self):
         super().__init__("gyro_calibration_node", self.doCalibration)
@@ -47,7 +43,7 @@ class GyroCalibrationNode(GyroProcedureNode):
             f"  temps: {request.temps}\n" + 
             f"  log dir: {logDir}")
         
-        datetimeStr = timeAsStr()
+        datetimeStr = self.timeAsStr()
         calLogPath = os.path.join(logDir, f"{datetimeStr}_calibration.csv")
         
         with self.lock:

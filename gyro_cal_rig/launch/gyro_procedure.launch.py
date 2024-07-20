@@ -2,9 +2,11 @@ import os
 from ament_index_python import get_package_share_directory
 from launch.launch_description import LaunchDescription
 from launch.launch_description_sources import AnyLaunchDescriptionSource
-from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription, OpaqueFunction, Shutdown
 from launch_ros.actions import PushRosNamespace, Node
 from launch.substitutions import LaunchConfiguration as LC
+
+RIG_STEPS_PER_REV = 7.557241247324732e+05
 
 cal_node_config = os.path.join(
     get_package_share_directory("gyro_cal_rig"),
@@ -31,20 +33,65 @@ def launch_gyro_driver(context, **kwargs):
         return [ driver ]
 
     return []
+
+def launch_gyro_rig_gui(context, **kwargs):
+    gui = Node(
+        package="gyro_cal_gui",
+        executable="GyroCalGui",
+        name="gyro_cal_rig_gui",
+        output="screen",
+        parameters=[{
+            "steps_per_revolution" : RIG_STEPS_PER_REV
+        }],
+        on_exit=Shutdown()
+    )
+    
+    if LC("cal_gui_disabled").perform(context) == "False":
+        return [ gui ]
+
+    return []
+
+
+def launch_procedure_node(context, **kwargs):
+    program_name = LC("gyro_procedure_node").perform(context)
+    
+    #procedure node
+    cal_node = Node(
+        package="gyro_cal_rig",
+        executable=f"{program_name}.py",
+        name="gyro_procedure_node",
+        output="screen",
+        parameters=[
+            cal_node_config,
+            {
+                "steps_per_revolution" : RIG_STEPS_PER_REV
+            }
+        ]
+    )
+    
+    return [ cal_node ]
     
 
 
 def generate_launch_description():
     return LaunchDescription([
+        DeclareLaunchArgument("gyro_procedure_node", default_value="gyro_calibration_node", description="Name of the calibrator/validator program to run."),
         DeclareLaunchArgument("gyro_port", default_value="/dev/ttyUSB0", description="Port connected to gyro"),
         DeclareLaunchArgument("rig_port", default_value="/dev/ttyUSB1", description="Port connected to rig"),
         DeclareLaunchArgument("gyro_driver_disabled", default_value="False", description="Disable gyro driver"),
+        DeclareLaunchArgument("cal_gui_disabled", default_value="False", description="Disable calibration rig GUI"),
         
         GroupAction([
             PushRosNamespace("cal_rig"),
             
             #gyro driver
             OpaqueFunction(function=launch_gyro_driver),
+            
+            #rig gui
+            OpaqueFunction(function=launch_gyro_rig_gui),
+            
+            #procedure node
+            OpaqueFunction(function=launch_procedure_node),
             
             #cal rig node
             Node(
@@ -57,15 +104,5 @@ def generate_launch_description():
                 }]
             ),
             
-            #cal control node
-            Node(
-                package="gyro_cal_rig",
-                executable="gyro_calibration_node.py",
-                name="gyro_calibration_node",
-                output="screen",
-                parameters=[
-                    cal_node_config
-                ]
-            )
         ], scoped=True)
     ])

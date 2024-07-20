@@ -15,14 +15,12 @@
 
 #define GYRO_STALE_TIME 200ms
 #define RIG_STALE_TIME 1s
-#define GYRO_CAL_ACTION "cal_rig/calibrate"
+#define GYRO_CAL_ACTION "cal_rig/run"
 #define CALIBRATING_TOPIC "status/cal_rig/calibrating"
 #define GYRO_RAW_TOPIC "gyro/raw"
 #define GYRO_STATUS_TOPIC "gyro/status"
 #define RIG_STATUS_TOPIC "status/cal_rig"
 #define RIG_COMMAND_TOPIC "command/cal_rig"
-
-#define STEPPER_COUNTS_PER_REV 7.557241247324732e+05
 
 using namespace std::placeholders;
 using namespace std::chrono_literals;
@@ -42,6 +40,14 @@ class GyroCalGuiNode : public rclcpp::Node
         lastGyroRawTime = currentTime;
         lastGyroStatusTime = currentTime;
         lastRigStatusTime = currentTime;
+
+        //parameters
+        declare_parameter<double>("steps_per_revolution", 0);
+        stepsPerRev = get_parameter("steps_per_revolution").as_double();
+        if(stepsPerRev < 0.01)
+        {
+            RCLCPP_ERROR(get_logger(), "Potential error loading parameters, steps_per_revolution is 0!");
+        }
         
         //ui connection
         ui->centralwidget->connect(ui->uiBrowseLogDir, &QPushButton::clicked, [this]() { this->onBrowseLogDirButtonPressed(); });
@@ -60,12 +66,6 @@ class GyroCalGuiNode : public rclcpp::Node
             10,
             std::bind(&GyroCalGuiNode::calibratingCb, this, _1)
         );
-
-        // gyroRawSub = create_subscription<riptide_msgs2::msg::Int32Stamped>(
-        //     GYRO_RAW_TOPIC,
-        //     rclcpp::SensorDataQoS(),
-        //     std::bind(&GyroCalGuiNode::gyroRawCb, this, _1)
-        // );
 
         gyroStatusSub = create_subscription<riptide_msgs2::msg::GyroStatus>(
             GYRO_STATUS_TOPIC,
@@ -140,7 +140,8 @@ class GyroCalGuiNode : public rclcpp::Node
             for(i = 0; i < numRateSteps; i++)
             {
                 double rpsRate = i * rateStep + minRate; //rotations per second rate
-                goal.rates.push_back(rpsRate * (reverse ? -1 : 1));
+                int rateCounts = rpsRate * (reverse ? -1 : 1) * stepsPerRev;
+                goal.rates.push_back(rateCounts);
             }
 
             reverse = !reverse;
@@ -186,7 +187,7 @@ class GyroCalGuiNode : public rclcpp::Node
     {
         gyro_cal_rig_msgs::msg::GyroRigStatus cmd;
         cmd.enabled = ui->uiRigManualEnabled->isChecked();
-        cmd.rate = ui->uiRigManualRate->value() * STEPPER_COUNTS_PER_REV;
+        cmd.rate = ui->uiRigManualRate->value() * stepsPerRev;
         cmd.heat = ui->uiRigManualHeat->isChecked();
         rigCommandPub->publish(cmd);
     }
@@ -222,12 +223,6 @@ class GyroCalGuiNode : public rclcpp::Node
         ui->uiRigCalibrating->setChecked(msg->data);
         ui->uiRigStartCal->setText(msg->data ? "Cancel Calibration" : "Begin Calibration");
     }
-
-    // void gyroRawCb(riptide_msgs2::msg::Int32Stamped::ConstSharedPtr msg)
-    // {
-    //     ui->uiGyroRate->setText(QString::fromStdString(std::to_string(msg->data)));
-    //     lastGyroRawTime = msg->header.stamp;
-    // }
 
     void gyroStatusCb(riptide_msgs2::msg::GyroStatus::ConstSharedPtr msg)
     {
@@ -297,14 +292,14 @@ class GyroCalGuiNode : public rclcpp::Node
     
     private:
     Ui_GyroRigGui *ui;
+    double stepsPerRev;
     rclcpp::TimerBase::SharedPtr timer;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr calibratingSub;
-    // rclcpp::Subscription<riptide_msgs2::msg::Int32Stamped>::SharedPtr gyroRawSub;
     rclcpp::Subscription<riptide_msgs2::msg::GyroStatus>::SharedPtr gyroStatusSub;
     rclcpp::Subscription<gyro_cal_rig_msgs::msg::GyroRigStatus>::SharedPtr rigStatusSub;
     rclcpp::Publisher<gyro_cal_rig_msgs::msg::GyroRigStatus>::SharedPtr rigCommandPub;
     rclcpp_action::Client<CalibrateGyro>::SharedPtr calibrateGyroClient;
-    std::vector<float> requestedRates;
+    std::vector<int32_t> requestedRates;
     std::vector<int16_t> requestedTemps;
 
     rclcpp::Time

@@ -1,4 +1,4 @@
-/**/gyro_calibration_node:
+/**/gyro_procedure_node:
   ros__parameters:
     allowable_temp_error: 250
     rig_ack_timeout: 3.0
