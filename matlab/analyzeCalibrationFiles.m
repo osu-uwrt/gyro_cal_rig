@@ -32,7 +32,7 @@ function [fitresult, gof] = analyzeCalibration(files)
     fprintf("Processing data\n");
     filteredcaldata = []; %same order as raw data
     uniquerigates = unique(rawcaldata(:, 3));
-    numuniquerates = size(uniquerigates);    
+    numuniquerates = length(uniquerigates);    
     for i = 1 : numuniquerates
         rigrate = uniquerigates(i);
         fprintf("Processing rate %d / %d\n", i, numuniquerates);
@@ -93,4 +93,8 @@ function [fitresult, gof] = analyzeCalibration(files)
     
     fprintf("Creating fit\n");
     [fitresult, gof] = fitcalibrationdata(filteredcaldata(:, 2), filteredcaldata(:, 4), filteredcaldata(:, 3));
+
+    %display temp limits
+    fprintf("Temperature min: %f\n", min(filteredcaldata(:, 4)));
+    fprintf("Temperature max: %f\n", max(filteredcaldata(:, 4)));
 end
