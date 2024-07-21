@@ -1,4 +1,4 @@
 /**/gyro_procedure_node:
   ros__parameters:
-    allowable_temp_error: 250
+    allowable_temp_error: 2
     rig_ack_timeout: 3.0

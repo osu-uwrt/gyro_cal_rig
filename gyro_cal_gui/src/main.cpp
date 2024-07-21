@@ -227,6 +227,9 @@ class GyroCalGuiNode : public rclcpp::Node
     void gyroStatusCb(riptide_msgs2::msg::GyroStatus::ConstSharedPtr msg)
     {
         ui->uiGyroTemp->setText(QString::fromStdString(std::to_string(msg->temperature)));
+        ui->uiGyroVSupply->setText(QString::fromStdString(std::to_string(msg->vsupply)));
+        ui->uiGyroSLDCurrent->setText(QString::fromStdString(std::to_string(msg->sldcurrent)));
+        ui->uiGyroDiag->setText(QString::fromStdString(std::to_string(msg->diagsignal)));
         lastGyroStatusTime = msg->header.stamp;
     }
 
@@ -275,7 +278,7 @@ class GyroCalGuiNode : public rclcpp::Node
             case rclcpp_action::ResultCode::SUCCEEDED:
                 break;
             case rclcpp_action::ResultCode::ABORTED:
-                setStatus("Calibration aborted", true);
+                setStatus("Calibration aborted: " + result.result->result, true);
                 return;
             case rclcpp_action::ResultCode::CANCELED:
                 setStatus("Calibration canceled", false);
@@ -300,7 +303,7 @@ class GyroCalGuiNode : public rclcpp::Node
     rclcpp::Publisher<gyro_cal_rig_msgs::msg::GyroRigStatus>::SharedPtr rigCommandPub;
     rclcpp_action::Client<CalibrateGyro>::SharedPtr calibrateGyroClient;
     std::vector<int32_t> requestedRates;
-    std::vector<int16_t> requestedTemps;
+    std::vector<double> requestedTemps;
 
     rclcpp::Time
         lastGyroRawTime,

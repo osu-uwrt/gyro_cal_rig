@@ -45,15 +45,15 @@ class GyroCalibrationNode(GyroProcedureNode):
             f"  temps: {request.temps}\n" + 
             f"  log dir: {logDir}")
         
-        datetimeStr = self.timeAsStr()
-        calLogPath = os.path.join(logDir, f"{datetimeStr}_calibration.csv")
-        
-        with self.lock:
-            self.calLogger = DataLogger(calLogPath, CAL_LOG_COLUMNS)
-            
-        self._calInProgress = True
-
         try:
+            datetimeStr = self.timeAsStr()
+            calLogPath = os.path.join(logDir, f"{datetimeStr}_calibration.csv")
+            
+            with self.lock:
+                self.calLogger = DataLogger(calLogPath, CAL_LOG_COLUMNS)
+                
+            self._calInProgress = True
+
             for i in range(0, len(request.temps)):
                 #try to collect rates while reaching temp. if temp is 0 dont worry about it
                 while not self.rigAtTemp(request.temps[i]) and request.temps[i] != 0 and not goal_handle.is_cancel_requested:
@@ -62,7 +62,7 @@ class GyroCalibrationNode(GyroProcedureNode):
                 #now at temp, collect rates one more time
                 if not goal_handle.is_cancel_requested:
                     self.collectRates(i, goal_handle)
-        except RuntimeError as ex:
+        except (RuntimeError, BaseException) as ex:
             self.stopRig()
             self._calInProgress = False
             result.result = f"ERROR: {ex}"

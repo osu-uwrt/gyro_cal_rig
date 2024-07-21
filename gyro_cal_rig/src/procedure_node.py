@@ -94,7 +94,7 @@ class GyroProcedureNode(Node):
     
     def rigShouldHeat(self, setpt):
         if self._rigStatus.heat:
-            return self._gyroStatus.temperature < setpt - self._tempRange + 10
+            return self._gyroStatus.temperature < setpt - self._tempRange + (self._tempRange / 25)
         
         return self._gyroStatus.temperature < setpt - self._tempRange
     
