@@ -1,0 +1,20 @@
+fprintf("Please select input data\n");
+[files, bases] = uigetfile("*.csv", "Select data files", "MultiSelect", "on");
+fullfiles = fullfile(bases, files);
+
+if ~isa(fullfiles, "cell")
+    fullfiles = { fullfiles };
+end
+
+if all(contains(ss, "calibration"))
+    fprintf("Running calibration analysis");
+
+    [fit, gof] = analyzeCalibrationFiles(fullfiles);
+
+    %display fit as final act
+    fprintf("Final result: \n");
+    fit
+elseif all(contains(ss, "validation"))
+    fprintf("Running validation analysis");
+    analyzeValidationFiles(fullfiles);
+

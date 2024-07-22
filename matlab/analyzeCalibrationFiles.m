@@ -9,7 +9,6 @@ function [fitresult, gof] = analyzeCalibration(files)
     STEPS_PER_ROTATION = 7.557241247324732e+05;
     RADS_PER_STEP = (1 / STEPS_PER_ROTATION) * 2 * pi;
     
-    
     fprintf("Populating arrays\n");
     
     rawcaldata = []; % order: caltimes, calgyrorates, calrigrates, caltemps
