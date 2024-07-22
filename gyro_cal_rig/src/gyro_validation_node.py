@@ -57,7 +57,7 @@ class GyroValidationNode(GyroProcedureNode):
         
         with self.lock:
             self.valLogger = DataLogger(valLogPath, LOG_COLUMNS)
-        
+                
         self._calInProgress = True
         
         try:
@@ -67,7 +67,7 @@ class GyroValidationNode(GyroProcedureNode):
                 
                 if not handle.is_cancel_requested:
                     self.collectPositions(i, handle)
-        except RuntimeError as ex:
+        except BaseException as ex:
             self.stopRig()
             self._calInProgress = False
             result.result = f"ERROR: {ex}"
@@ -107,6 +107,8 @@ class GyroValidationNode(GyroProcedureNode):
             #  - stop rig and rest for time
             #  - drive in other direction for time
             #  - stop and rest for time
+            
+            self.resetExpectedYaw()
             
             self.rampToSpeed(rates[i], self.rigShouldHeat(handle.request.temps[tempIdx]))
             time.sleep(handle.request.seconds_per_rate)

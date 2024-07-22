@@ -6,7 +6,7 @@ from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDesc
 from launch_ros.actions import PushRosNamespace, Node
 from launch.substitutions import LaunchConfiguration as LC
 
-RIG_STEPS_PER_REV = 7.557241247324732e+05
+RIG_STEPS_PER_REV = 791862.680227
 
 cal_node_config = os.path.join(
     get_package_share_directory("gyro_cal_rig"),

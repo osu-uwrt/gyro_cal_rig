@@ -107,10 +107,10 @@ class GyroCalGuiNode : public rclcpp::Node
 
         ui->uiCalProgress->setValue(0);
 
-        setStatus("Starting gyro calibration", false);
+        setStatus("Starting gyro Procedure", false);
         if(!calibrateGyroClient->wait_for_action_server(2s))
         {
-            setStatus("Calibration server unavailable.", true);
+            setStatus("Procedure server unavailable.", true);
             return;
         }
 
@@ -221,7 +221,7 @@ class GyroCalGuiNode : public rclcpp::Node
     void calibratingCb(std_msgs::msg::Bool::ConstSharedPtr msg)
     {
         ui->uiRigCalibrating->setChecked(msg->data);
-        ui->uiRigStartCal->setText(msg->data ? "Cancel Calibration" : "Begin Calibration");
+        ui->uiRigStartCal->setText(msg->data ? "Cancel Procedure" : "Begin Procedure");
     }
 
     void gyroStatusCb(riptide_msgs2::msg::GyroStatus::ConstSharedPtr msg)
@@ -246,9 +246,9 @@ class GyroCalGuiNode : public rclcpp::Node
     void calGoalResponseCb(std::shared_ptr<GyroCalGuiNode::CalibrateGyroGH> handle)
     {
         if (!handle) {
-            setStatus("Calibration rejected!", true);
+            setStatus("Procedure rejected!", true);
         } else {
-            setStatus("Calibration in progress", false);
+            setStatus("Procedure in progress", false);
         }
     }
 
@@ -268,7 +268,7 @@ class GyroCalGuiNode : public rclcpp::Node
         double progressPercent = triedCombinations / (double) possibleCombinations;
         ui->uiCalProgress->setValue((int) (progressPercent * 100));
 
-        std::string statusString = "Calibration in progress (" + std::to_string(combinationsToGo) + " combinations to go)";
+        std::string statusString = "Procedure in progress (" + std::to_string(combinationsToGo) + " combinations to go)";
         setStatus(statusString, false);
     }
 
@@ -278,10 +278,10 @@ class GyroCalGuiNode : public rclcpp::Node
             case rclcpp_action::ResultCode::SUCCEEDED:
                 break;
             case rclcpp_action::ResultCode::ABORTED:
-                setStatus("Calibration aborted: " + result.result->result, true);
+                setStatus("Procedure aborted: " + result.result->result, true);
                 return;
             case rclcpp_action::ResultCode::CANCELED:
-                setStatus("Calibration canceled", false);
+                setStatus("Procedure canceled", false);
                 return;
             default:
                 setStatus("Unknown result code", true);
@@ -289,7 +289,7 @@ class GyroCalGuiNode : public rclcpp::Node
         }
         
         ui->uiCalProgress->setValue(100);
-        setStatus("Calibration succeeded!", false);
+        setStatus("Procedure succeeded!", false);
     }
 
     

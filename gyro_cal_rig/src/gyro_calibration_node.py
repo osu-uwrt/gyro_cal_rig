@@ -62,7 +62,7 @@ class GyroCalibrationNode(GyroProcedureNode):
                 #now at temp, collect rates one more time
                 if not goal_handle.is_cancel_requested:
                     self.collectRates(i, goal_handle)
-        except (RuntimeError, BaseException) as ex:
+        except BaseException as ex:
             self.stopRig()
             self._calInProgress = False
             result.result = f"ERROR: {ex}"

@@ -32,6 +32,7 @@ install(TARGETS gyro_rig_node
 install(PROGRAMS 
   src/gyro_calibration_node.py 
   src/gyro_validation_node.py
+  src/rig_recording_node.py
   src/data_logger.py
   src/procedure_node.py
   DESTINATION lib/${PROJECT_NAME})
