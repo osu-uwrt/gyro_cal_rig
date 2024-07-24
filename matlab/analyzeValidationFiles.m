@@ -28,22 +28,42 @@ function analyzeValidationFiles(files)
     rawvaldata(:, 5) = unwrap(rawvaldata(:, 5));
 
     time = rawvaldata(:, 1);
+    rigrates = rawvaldata(:, 3);
     expectedvals = rawvaldata(:, 4);
+    actualvals = rawvaldata(:, 5);
+    positiondiff = expectedvals - actualvals;
 
-    positiondiff = rawvaldata(:, 4) - rawvaldata(:, 5);
-    pdmean = mean(positiondiff);
-    pdstd = std(positiondiff);
-    
-    notoutliers = abs(positiondiff - pdmean) < 3 * pdstd;
-    timenooutliers = time(notoutliers);
-    pdnooutliers = positiondiff(notoutliers);
-    evnooutliers = expectedvals(notoutliers);
+    [pdgoodvals, timenopdoutliers, pdnooutliers] = removeoutliers(time, positiondiff);
 
     pdmaxidx = find(pdnooutliers == max(pdnooutliers));
-    pdmaxtime = timenooutliers(pdmaxidx);
+    pdmaxtime = timenopdoutliers(pdmaxidx);
     pdmaxvalue = pdnooutliers(pdmaxidx);
     
-    diffratiosnooutliers = evnooutliers ./ pdnooutliers;
+    %drift analysis
+    rigrateszero = rigrates(pdgoodvals) == 0;
+    pdnooutlierszero = pdnooutliers(rigrateszero);
+    timenopdoutlierszero = timenopdoutliers(rigrateszero);
+
+    %difference ratio analysis
+    pdexpectedvals = expectedvals(pdgoodvals);
+    pdexpectedvalszero = pdexpectedvals(rigrateszero);
+    dividableevs = pdexpectedvalszero ~= 0;
+    pdratios = pdnooutlierszero(dividableevs) ./ pdexpectedvalszero(dividableevs);
+    [~, timenoevoutliers, diffratiosnooutliers] = removeoutliers(timenopdoutlierszero(dividableevs), pdratios);
+
+    plot(timenoevoutliers);
+
+    %final results
+    initialdiff = pdnooutlierszero(1);
+    finaldiff = pdnooutlierszero(length(pdnooutlierszero));
+    totaltime = timenopdoutlierszero(length(timenopdoutlierszero));
+    totaldriftrads = finaldiff - initialdiff;
+    driftpersdegs = (totaldriftrads * 180 / pi) / totaltime;
+
+    fprintf("Total Time: %f s\n", totaltime);
+    fprintf("Initial difference: %f rad\n", initialdiff);
+    fprintf("Final difference: %f rad\n", finaldiff);
+    fprintf("Drift: %f degs/hr\n", driftpersdegs * 3600);
 
     %create plots
     fprintf("Creating plots\n");
@@ -57,28 +77,28 @@ function analyzeValidationFiles(files)
     ylabel("Time (s)");
 
     nexttile
-    plot(time, rawvaldata(:, 2));
+    plot(time, rawvaldata(:, 2), '.');
     title("Temperature vs Time");
     xlabel("Time (s)");
     ylabel("Temperature (C)");
 
     nexttile
-    plot(time, rawvaldata(:, 4));
+    plot(time, rawvaldata(:, 4), '.');
     hold on
-    plot(time, rawvaldata(:, 5));
+    plot(time, rawvaldata(:, 5), '.');
     title("Expected and Actual Position vs Time");
     xlabel("Time (s)");
     ylabel("Position (rad)");
     legend("Expected Position", "Actual Position");
 
     nexttile
-    plot(time, positiondiff);
-    title("Position difference vs Time");
+    plot(timenopdoutlierszero, pdnooutlierszero);
+    title("Position difference vs Time while not moving");
     xlabel("Time (s)");
     ylabel("Position Difference (rad)");
 
     nexttile
-    plot(timenooutliers, pdnooutliers);
+    plot(timenopdoutliers, pdnooutliers, '.');
     title("Position difference without outliers");
     xlabel("Time (s)");
     ylabel("Position Difference (rad)");
@@ -86,12 +106,18 @@ function analyzeValidationFiles(files)
     plot(pdmaxtime, pdmaxvalue, "*");
 
     nexttile
-    plot(timenooutliers, diffratiosnooutliers);
-    title("Expected / Error vs time");
+    plot(timenoevoutliers, diffratiosnooutliers, '.');
+    title("Error / Expected vs time");
     xlabel("Time (s)");
-    ylabel("Expected / Error");
+    ylabel("Error / Expected");
+end
 
-    %display final results
-    fprintf("Maximum difference: %f\n", pdmaxvalue);
-    fprintf("Maximum error ratio: %f\n", diffratiosnooutliers(pdmaxidx))
+
+function [notoutliers, newtime, newdata] = removeoutliers(time, data)
+    m = mean(data);
+    sd = std(data);
+    
+    notoutliers = abs(data - m) < 3 * sd;
+    newtime = time(notoutliers);
+    newdata = data(notoutliers);
 end
