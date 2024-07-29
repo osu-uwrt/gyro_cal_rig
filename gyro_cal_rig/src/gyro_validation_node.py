@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-import time
 from threading import Lock
 import rclpy
 import rclpy.action
@@ -59,6 +58,7 @@ class GyroValidationNode(GyroProcedureNode):
             self.valLogger = DataLogger(valLogPath, LOG_COLUMNS)
                 
         self._calInProgress = True
+        self.resetExpectedYaw()
         
         try:
             for i in range(0, len(request.temps)):
@@ -107,18 +107,16 @@ class GyroValidationNode(GyroProcedureNode):
             #  - stop rig and rest for time
             #  - drive in other direction for time
             #  - stop and rest for time
-            
-            self.resetExpectedYaw()
-            
+
             self.rampToSpeed(rates[i], self.rigShouldHeat(handle.request.temps[tempIdx]))
-            time.sleep(handle.request.seconds_per_rate)
-            self.sendRigCommand(0, self.rigShouldHeat(handle.request.temps[tempIdx]))
-            time.sleep(handle.request.seconds_per_rate)
+            self.waitForTimeOrCancel(handle.request.seconds_per_rate, handle)
+            self.rampToSpeed(0, self.rigShouldHeat(handle.request.temps[tempIdx]))
+            self.waitForTimeOrCancel(handle.request.seconds_per_rate, handle)
             
             self.rampToSpeed(-1 * rates[i], self.rigShouldHeat(handle.request.temps[tempIdx]))
-            time.sleep(handle.request.seconds_per_rate)
-            self.sendRigCommand(0, self.rigShouldHeat(handle.request.temps[tempIdx]))
-            time.sleep(handle.request.seconds_per_rate)
+            self.waitForTimeOrCancel(handle.request.seconds_per_rate, handle)
+            self.rampToSpeed(0, self.rigShouldHeat(handle.request.temps[tempIdx]))
+            self.waitForTimeOrCancel(handle.request.seconds_per_rate, handle)
             
             if handle.is_cancel_requested:
                 self.get_logger().info("Preempting validation")

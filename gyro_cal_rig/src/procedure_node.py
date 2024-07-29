@@ -77,6 +77,15 @@ class GyroProcedureNode(Node):
         cmd = GyroRigStatus()
         cmd.enabled = False
         self._rigCommandPub.publish(cmd)
+        
+    
+    def waitForTimeOrCancel(self, seconds, handle):
+        for elapsed in range(0, int(seconds)):
+            time.sleep(1)
+            if handle.is_cancel_requested:
+                return
+        
+        time.sleep(seconds - int(seconds))
     
     
     def calGoalCb(self, handle):
