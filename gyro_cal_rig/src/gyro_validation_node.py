@@ -28,9 +28,6 @@ class GyroValidationNode(GyroProcedureNode):
         self._gyroStatusSub = self.create_subscription(GyroStatus, GYRO_STATUS_TOPIC, self.gyroStatusCb, 10)
         self._odomSub = self.create_subscription(Odometry, "odometry/filtered", self.odomCb, 10)
         
-        self._rigStatus = GyroRigStatus()
-        self._gyroStatus = GyroStatus()
-        self._odom = Odometry()
         self._expectedYaw = 0
         
         self.get_logger().info("Gyro validation node ready")
@@ -141,10 +138,6 @@ class GyroValidationNode(GyroProcedureNode):
     
     def resetExpectedYaw(self):
         self._expectedYaw = self.getCurrentYaw()
-        
-    
-    def secondsFromTimeMsg(self, time):
-        return time.sec + time.nanosec / 1000000000.0
     
     
     def updateLog(self):

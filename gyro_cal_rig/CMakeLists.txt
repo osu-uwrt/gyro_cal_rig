@@ -29,12 +29,10 @@ ament_target_dependencies(gyro_rig_node ${deps})
 install(TARGETS gyro_rig_node
   DESTINATION lib/${PROJECT_NAME})
 
+file(GLOB python_programs RELATIVE ${PROJECT_SOURCE_DIR} src/*.py)
+
 install(PROGRAMS 
-  src/gyro_calibration_node.py 
-  src/gyro_validation_node.py
-  src/rig_recording_node.py
-  src/data_logger.py
-  src/procedure_node.py
+  ${python_programs}
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY config

@@ -6,6 +6,7 @@ from rclpy.node import Node
 from rclpy.action import ActionServer
 from gyro_cal_rig_msgs.action import CalibrateGyro
 from gyro_cal_rig_msgs.msg import GyroRigStatus
+from nav_msgs.msg import Odometry
 from riptide_msgs2.msg import Int32Stamped, GyroStatus
 from std_msgs.msg import Bool
 
@@ -48,6 +49,7 @@ class GyroProcedureNode(Node):
         self._rigStatus = GyroRigStatus()
         self._gyroRaw = Int32Stamped()
         self._gyroStatus = GyroStatus()
+        self._odom = Odometry()
         
         #state
         self._calInProgress = False #true if calibration data is being collected
@@ -87,6 +89,8 @@ class GyroProcedureNode(Node):
         
         time.sleep(seconds - int(seconds))
     
+    def secondsFromTimeMsg(self, time):
+        return time.sec + time.nanosec / 1000000000.0
     
     def calGoalCb(self, handle):
         self.get_logger().info("Goal requested")

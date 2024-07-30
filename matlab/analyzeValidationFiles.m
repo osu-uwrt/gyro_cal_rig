@@ -45,13 +45,18 @@ function analyzeValidationFiles(files)
     timenopdoutlierszero = timenopdoutliers(rigrateszero);
 
     %difference ratio analysis
-    pdexpectedvals = expectedvals(pdgoodvals);
-    pdexpectedvalszero = pdexpectedvals(rigrateszero);
-    dividableevs = pdexpectedvalszero ~= 0;
-    pdratios = pdnooutlierszero(dividableevs) ./ pdexpectedvalszero(dividableevs);
-    [~, timenoevoutliers, diffratiosnooutliers] = removeoutliers(timenopdoutlierszero(dividableevs), pdratios);
-
-    plot(timenoevoutliers);
+    expectedvalszero = expectedvals(rigrates == 0);
+    actualvalszero = actualvals(rigrates == 0);
+    timezero = time(rigrates == 0);
+    expectedvaldiffs = diff(expectedvalszero);
+    expectedvaldifflocs = expectedvaldiffs ~= 0;
+    expectedvaldeltas = expectedvaldiffs(expectedvaldifflocs);
+    actualvalsatdeltas = actualvalszero(expectedvaldifflocs);
+    timeatdeltas = timezero(expectedvaldifflocs);
+    actualvaldeltas = diff(actualvalsatdeltas);
+    actualvaldeltas(length(actualvaldeltas) + 1) = 0; %add a zero to make dimensions the same
+    diffratios = actualvaldeltas ./ expectedvaldeltas;
+    [~, diffratiotimenooutliers, diffratiosnooutliers] = removeoutliers(timeatdeltas, diffratios);
 
     %final results
     initialdiff = pdnooutlierszero(1);
@@ -86,10 +91,12 @@ function analyzeValidationFiles(files)
     plot(time, rawvaldata(:, 4), '.');
     hold on
     plot(time, rawvaldata(:, 5), '.');
+    plot(timeatdeltas, expectedvalszero(expectedvaldifflocs), "*");
+    plot(timeatdeltas, actualvalszero(expectedvaldifflocs), "*");
     title("Expected and Actual Position vs Time");
     xlabel("Time (s)");
     ylabel("Position (rad)");
-    legend("Expected Position", "Actual Position");
+    legend("Expected Position", "Actual Position", "Expected Position at Deltas", "Actual Position at Deltas");
 
     nexttile
     plot(timenopdoutlierszero, pdnooutlierszero);
@@ -106,8 +113,8 @@ function analyzeValidationFiles(files)
     plot(pdmaxtime, pdmaxvalue, "*");
 
     nexttile
-    plot(timenoevoutliers, diffratiosnooutliers, '.');
-    title("Error / Expected vs time");
+    plot(diffratiotimenooutliers, diffratiosnooutliers, '.');
+    title("Actual / Expected vs time");
     xlabel("Time (s)");
     ylabel("Error / Expected");
 end
