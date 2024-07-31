@@ -75,9 +75,10 @@ class GyroProcedureNode(Node):
         self._ackTimeout = self.get_parameter("rig_ack_timeout").value
     
     
-    def stopRig(self):
+    def stopRig(self, heat = False):
         cmd = GyroRigStatus()
         cmd.enabled = False
+        cmd.heat = heat
         self._rigCommandPub.publish(cmd)
         
     

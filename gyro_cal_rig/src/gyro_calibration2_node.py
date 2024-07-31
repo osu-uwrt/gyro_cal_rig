@@ -62,7 +62,7 @@ class GyroCalibrationNode(GyroProcedureNode):
             for i in range(0, len(request.temps)):
                 #try to collect rates while reaching temp. if temp is 0 dont worry about it
                 while not self.rigAtTemp(request.temps[i]) and request.temps[i] != 0 and not goal_handle.is_cancel_requested:
-                    self.stopRig()
+                    self.stopRig(heat = True)
                     time.sleep(1)
                         
                 # now at temp, collect rates
