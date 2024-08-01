@@ -6,7 +6,14 @@ if ~isa(fullfiles, "cell")
     fullfiles = { fullfiles };
 end
 
-if all(contains(fullfiles, "calibration"))
+if all(contains(fullfiles, "calibration2"))
+    fprintf("Running calibration2 analysis\n");
+    [fit, gof, filtereddata] = analyzeCalibration2Files(fullfiles);
+
+    %display fit as final act
+    fprintf("Final result: \n");
+    fit
+elseif all(contains(fullfiles, "calibration"))
     fprintf("Running calibration analysis\n");
 
     [fit, gof] = analyzeCalibrationFiles(fullfiles);

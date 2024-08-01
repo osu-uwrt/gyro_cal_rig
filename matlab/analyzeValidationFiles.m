@@ -12,8 +12,8 @@ function analyzeValidationFiles(files)
     
         tabletimes = table{:, 1} + (table{:, 2} / 1000000000) - table{1, 1};
         tablegyrotemps = table{:, 3};
-        tablerigrates = table{:, 4};
-        tableexpectedyaw = table{:, 8};
+        tablerigrates = table{:, 4} * -1;
+        tableexpectedyaw = table{:, 8} * -1;
         tableactualyaw = table{:, 9};
 
         rawvaldata = [rawvaldata; tabletimes, tablegyrotemps, ...

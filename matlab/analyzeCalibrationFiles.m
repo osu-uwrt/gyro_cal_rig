@@ -3,7 +3,7 @@
 % Up to 16GB of ram or swap space is required for this script to run,
 % depending on the amount of data being processed
 %
-function [fitresult, gof] = analyzeCalibration(files)
+function [fitresult, gof] = analyzeCalibrationFiles(files)
     format compact
     
     STEPS_PER_ROTATION = 791862.680227;
