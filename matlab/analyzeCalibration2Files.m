@@ -72,30 +72,30 @@ function [fit, gof, filtereddata] = analyzeCalibration2Files(files)
     figure;
     tiledlayout(3, 2);
     nexttile;
-    plot(rawcaldata(:, 1));
+    plot(rawcaldata(:, 1), '.');
     title("Time");
     ylabel("Time (s)");
 
     nexttile;
-    plot(rawcaldata(:, 1), rawcaldata(:, 3));
+    plot(rawcaldata(:, 1), rawcaldata(:, 3), '.');
     title("Rig rate vs time");
     xlabel("Time (s)");
     ylabel("Rig rate (rad/s)");
 
     nexttile;
-    plot(rawcaldata(:, 1), rawcaldata(:, 2));
+    plot(rawcaldata(:, 1), rawcaldata(:, 2), '.');
     title("Gyro rate vs time");
     xlabel("Time (s)");
     ylabel("Gyro rate");
 
     nexttile;
-    plot(rawcaldata(:, 1), rawcaldata(:, 4));
+    plot(rawcaldata(:, 1), rawcaldata(:, 4), '.');
     title("Gyro temperature vs time");
     xlabel("Time (s)");
     ylabel("Gyro temperature (c)");
 
     nexttile;
-    plot(filtereddata(:, 1), filtereddata(:, 2));
+    plot(filtereddata(:, 1), filtereddata(:, 2), '.');
     title("Filtered gyro rate vs Filtered rig rate");
     xlabel("Filtered Rig rate (rads/sec)");
     ylabel("Filtered Gyro rate");
