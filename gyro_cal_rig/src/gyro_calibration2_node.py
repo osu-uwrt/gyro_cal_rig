@@ -2,18 +2,18 @@
 
 import os
 import time
+import numpy as np
 from threading import Lock
 import rclpy
-from rclpy.client import Client
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.parameter_service import SetParameters
 from gyro_cal_rig_msgs.action import CalibrateGyro
 from gyro_cal_rig_msgs.msg import GyroRigStatus
-from riptide_msgs2.msg import GyroStatus
-from nav_msgs.msg import Odometry
+from riptide_msgs2.msg import GyroStatus, Int32Stamped
 from data_logger import DataLogger
 from procedure_node import GyroProcedureNode, RIG_STATUS_TOPIC, GYRO_STATUS_TOPIC
 
+RATE_BUFFER_SIZE = 100
 GYRO_SET_PARAMS_CLIENT = "riptide_gyro/set_parameters"
 CAL_LOG_COLUMNS = ["sec", "nanosec", "gyro_temp", "rig_rate", "odom_rate", "rig_heating", "rig_enabled", "rig_stalled"]
 
@@ -26,10 +26,15 @@ class GyroCalibrationNode(GyroProcedureNode):
         #subscriptions
         self._rigStatusSub = self.create_subscription(GyroRigStatus, RIG_STATUS_TOPIC, self.rigStatusCb, 10)
         self._gyroStatusSub = self.create_subscription(GyroStatus, GYRO_STATUS_TOPIC, self.gyroStatusCb, 10)
-        self._odomSub = self.create_subscription(Odometry, "odometry/filtered", self.odomCb, 10)       
+        self._odomSub = self.create_subscription(Int32Stamped, "gyro/raw", self.rawCb, 10)       
         
         #clients
         self._gyroParameterClient = self.create_client(SetParameters, GYRO_SET_PARAMS_CLIENT) 
+        
+        #avg
+        self._rateBuffer = np.zeros(RATE_BUFFER_SIZE)
+        self._rateBufferLoc = 0
+        self._standingRate = 0
         
         self.get_logger().info("Gyro calibration node ready")
     
@@ -125,7 +130,7 @@ class GyroCalibrationNode(GyroProcedureNode):
                         now.to_msg().nanosec,
                         self._gyroStatus.temperature,
                         self._rigStatus.rate,
-                        self._odom.twist.twist.angular.z,
+                        self._standingRate,
                         self._rigStatus.heat,
                         self._rigStatus.enabled,
                         self._rigStatus.stalled
@@ -140,9 +145,13 @@ class GyroCalibrationNode(GyroProcedureNode):
         self._gyroStatus = msg
         self.updateLog()
         
-    def odomCb(self, msg):
-        self._odom = msg
-        self.updateLog()
+    def rawCb(self, msg):
+        self._rateBuffer[self._rateBufferLoc] = msg.data
+        self._rateBufferLoc += 1
+        if self._rateBufferLoc >= RATE_BUFFER_SIZE:
+            self._rateBufferLoc = 0
+            self._standingRate = np.average(self._rateBuffer)
+            self.updateLog()
         
 
 def main(args = None):
