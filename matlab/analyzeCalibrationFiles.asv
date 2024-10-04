@@ -6,7 +6,7 @@
 function [fitresult, gof] = analyzeCalibration(files)
     format compact
     
-    STEPS_PER_ROTATION = 791862.680227;
+    STEPS_PER_ROTATION = 577803.965671;
     RADS_PER_STEP = (1 / STEPS_PER_ROTATION) * 2 * pi;
     
     

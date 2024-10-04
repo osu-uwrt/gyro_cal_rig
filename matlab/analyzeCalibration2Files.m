@@ -6,7 +6,7 @@
 function [fit, gof, filtereddata] = analyzeCalibration2Files(files)
     format compact
     
-    STEPS_PER_ROTATION = 791862.680227;
+    STEPS_PER_ROTATION = 577803.965671;
     RADS_PER_STEP = (1 / STEPS_PER_ROTATION) * 2 * pi;
     SEGMENT_MARGIN = 30; % with odom at 30hz, this is about 1 second of data
     
