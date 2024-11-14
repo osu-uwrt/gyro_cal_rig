@@ -10,6 +10,10 @@ if all(contains(fullfiles, "calibration2"))
     fprintf("Running calibration2 analysis\n");
     [fit, gof, filtereddata] = analyzeCalibration2Files(fullfiles);
 
+    rigrates = filtereddata(:, 1);
+    gyrorate = filtereddata(:, 2);
+    gyrotemp = filtereddata(:, 3);
+
     %display fit as final act
     fprintf("Final result: \n");
     fit

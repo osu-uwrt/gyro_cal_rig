@@ -1,5 +1,5 @@
 %
-% Gyro calibration data analysis function.
+% Gyro calibration v2 data analysis function.
 % Up to 16GB of ram or swap space is required for this script to run,
 % depending on the amount of data being processed
 %
@@ -8,7 +8,7 @@ function [fit, gof, filtereddata] = analyzeCalibration2Files(files)
     
     STEPS_PER_ROTATION = 577803.965671;
     RADS_PER_STEP = (1 / STEPS_PER_ROTATION) * 2 * pi;
-    SEGMENT_MARGIN = 30; % with odom at 30hz, this is about 1 second of data
+    SEGMENT_MARGIN = 50; % this number of points is clipped from both sides of each segment
     
     fprintf("Populating arrays\n");
     
@@ -22,7 +22,7 @@ function [fit, gof, filtereddata] = analyzeCalibration2Files(files)
         %header: sec,nanosec,gyro_raw,gyro_temp,rig_rate,rig_heating,rig_enabled,rig_stalled
     
         tabletimes = table{:, 1} + (table{:, 2} / 1000000000) - table{1, 1};
-        tablegyrorates = table{:, 5} * 1000000;
+        tablegyrorates = table{:, 5};
         tabletemps = table{:, 3};
         tablerigrates = table{:, 4} * RADS_PER_STEP;
     
@@ -44,10 +44,11 @@ function [fit, gof, filtereddata] = analyzeCalibration2Files(files)
         
         %cut margin
         segmentdata = segmentdata(SEGMENT_MARGIN : length(segmentdata) - SEGMENT_MARGIN, :);
-        segmentrigrate = mean(segmentdata(:, 3));
-        segmentgyrorate = mean(segmentdata(:, 2));
-        segmenttemp = mean(segmentdata(:, 4));
-        filtereddata (i, :) = [segmentrigrate, segmentgyrorate, segmenttemp];
+
+        segmentrigratemean = mean(segmentdata(:, 3));
+        segmentgyroratemean = mean(segmentdata(:, 2));
+        segmenttempmean = mean(segmentdata(:, 4));
+        filtereddata (i, :) = [segmentrigratemean, segmentgyroratemean, segmenttempmean];
 
         rawbuffer = rawbuffer(find(splitlocs) + 1 : length(rawbuffer), :);
         splitlocs = splitlocs(find(splitlocs) + 1 : length(splitlocs));
