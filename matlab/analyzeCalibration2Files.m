@@ -107,6 +107,6 @@ function [fit, gof, filtereddata] = analyzeCalibration2Files(files)
     %display temp limits
     fprintf("Rate normalized by mean %d and std %d\n", gyroratemean, gyroratestd);
     fprintf("Temp normalized by mean %d and std %d\n", gyrotempmean, gyrotempstd);
-    fprintf("Temperature min: %f\n", min(filtereddata(:, 3)));
-    fprintf("Temperature max: %f\n", max(filtereddata(:, 3)));
+    fprintf("Temperature min: %f\n", min(rawcaldata(:, 4)));
+    fprintf("Temperature max: %f\n", max(rawcaldata(:, 4)));
 end
