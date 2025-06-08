@@ -36,5 +36,5 @@ elseif all(contains(fullfiles, "recording"))
     fprintf("Steps per Rotation: %f\n", stepsPerRotation);
 else
     error("Could not determine which script to run. Ensure that that" ...
-        + "all chosen files have the same type (calibration or validation).");
+        + " all chosen files have the same type (calibration or validation).");
 end
