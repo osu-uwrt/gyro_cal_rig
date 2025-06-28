@@ -25,6 +25,7 @@ graph TD;
 ```
 
 A picture of UWRT's original calibration rig is shown below:
+
 ![UWRT FOG Calibration rig](images/fog_calibration_rig.jpg)
 
 ## Step 1: Calibrating the rig
@@ -84,6 +85,7 @@ After the desired calibration files are collected, launch MATLAB and add the *ma
 ![Calibration2 output](images/calibration2.png)
 
 Above: calibration script output
+
 ![gyro_config.yaml](images/gyroconfig.png)
 
 Above: gyro configuration file
@@ -108,3 +110,5 @@ After successfully completing the validation procedure, launch MATLAB, add the *
 The script will also print drift information to the console.
 
 ![Validation analysis output](images/validation.png)
+
+BK
