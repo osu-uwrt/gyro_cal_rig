@@ -97,7 +97,9 @@ The parameters may be configured very similarly to those of the calibration2 pro
 - **Time Per Rate**: This should be much higher than the 16 seconds used for the calibration2. One minute is a good value to use for this. 
 - Disabling temperature by setting it to zero will yield a quicker validation. Generally, validating the temperature is less important at this stage.
 
-After settiing your settings appropriately, select a log directory, then select "Begin Calibration" to begin the procedure. The validation procedure will generally take much longer to complete than the calibration2 procedure.
+Before starting the procedure, you may want to tare the gyro using the RViz panel. This will eliminate almost all of the static drift that will be observed by the procedure. However, you may choose to skip this step if evaulation of the overall performance of the calibration is desired.
+
+After configuring the calibration and taring the gyro, select a log directory, then select "Begin Calibration" to begin the procedure. The validation procedure will generally take much longer to complete than the calibration2 procedure.
 
 After successfully completing the validation procedure, launch MATLAB, add the *matlab* directory to the path, run the ```analyze``` command, and select your validation file. The script will produce a figure with several plots, each describing a different aspect of the validation procedure and the gyro performance:
 - The time plot prints ROS time, allowing the user to detect discontinuities between the two that may indicate an issue with the procedure (e.g. the process falling asleep). 
